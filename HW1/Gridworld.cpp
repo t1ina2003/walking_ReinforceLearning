@@ -9,39 +9,35 @@ Output: a state-value table
 #include <stdlib.h>
 #include <stdio.h>
 #include <iomanip>
+#include "write_csv_file.h"
 using namespace std;
 
-void Bellman_eq();
-void write_file(char * file_name);
-
-double state_value[7][7]={0};           //state value table
-double next_state_value[7][7]={0};      //next state value table
-double reward [7][7]=                   //Reward table
-{
-    -1,-1,-1,-1,-1,-1,-1,
-    -1, 0, 0, 0, 0, 0,-1,
-    -1, 0, 0, 0, 0, 0,-1,
-    -1, 0, 0, 0, 0, 0,-1,
-    -1, 0, 0, 0, 0, 0,-1,
-    -1, 0, 0, 0, 0, 0,-1,
-    -1,-1,-1,-1,-1,-1,-1
-};
-int times,count=0;                      //accumulated Iteration times
+void Bellman_eq(double **state_value,int height, int width);
+//void write_file(char * file_name,int count,double **state_value);
 
 int main(){
+    int height=7,width=7;                                           //set height,width
+
+    double **state_value=(double**) calloc(height,sizeof(double*)); //initial state value table
+    for(int i=0;i<height;i++)
+        state_value[i]=(double*) calloc(width,sizeof(double));
+
+    int times,count=0;                                             //accumulated Iteration times
+
     while(cout<<"input cycle times:",cin>>times){
         system("cls");
-        for(int i=0;i<times;i++,++count)Bellman_eq();//execute "times" times
+        for(int i=0;i<times;i++,++count)Bellman_eq(state_value,height,width);
 
-        cout<<endl<<" Iteration times:"<<count<<endl<<endl;
+        cout<<endl<<" Iteration times:"<<count<<endl<<endl;//execute times
 
-        for(int i=1;i<6;i++){
+        for(int i=1;i<6;i++){ //show state value table
             for(int j=1;j<6;j++)
                 cout<<setprecision(1)<<fixed<<setw(6)<<state_value[i][j]<<"  ";
             cout<<endl<<endl;
-        }//show state value table
+        }
+
         cout<<"-------------------"<<endl;
-        write_file("state_value_table.csv");
+        write_file("state_value_table.csv",count,state_value);
     }
 }
 
@@ -50,7 +46,26 @@ int main(){
    Function:  calculate all state-value with three different V(s') condition.
  Parameters:  none.
 *********************************************************************************/
-void Bellman_eq(){
+void Bellman_eq(double **state_value,int height, int width){
+    double **next_state_value=(double**) calloc(height,sizeof(double*));           //initial next_state_value table
+    for(int i=0;i<height;i++)
+        next_state_value[i]=(double*) calloc(width,sizeof(double));
+
+    double **reward=(double**) calloc(height,sizeof(double*));           //initial reward table
+    for(int i=0;i<height;i++)
+        reward[i]=(double*) calloc(width,sizeof(double));
+
+    for(int i=0;i<height;i++)                                           //reward table setting
+        for(int j=0;j<width;j++)
+            if(i==0||j==0||i==6||j==6)reward[i][j]=-1;
+    /*Reward table :
+    -1,-1,-1,-1,-1,-1,-1,
+    -1, 0, 0, 0, 0, 0,-1,
+    -1, 0, 0, 0, 0, 0,-1,
+    -1, 0, 0, 0, 0, 0,-1,
+    -1, 0, 0, 0, 0, 0,-1,
+    -1, 0, 0, 0, 0, 0,-1,
+    -1,-1,-1,-1,-1,-1,-1 */
 
     double up,down,left,right;
     double up_reward,down_reward,left_reward,right_reward;
@@ -110,15 +125,15 @@ void Bellman_eq(){
    Function:  Write array into CSV file.
  Parameters:  file_name.
 *********************************************************************************/
-void write_file(char * file_name){
-    FILE *fpw;
-    fpw = fopen(file_name, "wb");
-    if (!fpw) printf("%s file create fail...\n",file_name);
-    fprintf(fpw, "Iteration times:%d\n",count);
-    for(int i=1;i<6;i++)
-            for(int j=1;j<6;j++){
-                fprintf(fpw, "%.1f,",state_value[i][j]);
-                if(j==5) fputc('\n', fpw);
-            }
-    fclose(fpw);
-}
+//void write_file(char * file_name,int count,double **state_value){
+//    FILE *fpw;
+//    fpw = fopen(file_name, "wb");
+//    if (!fpw) printf("%s file create fail...\n",file_name);
+//    fprintf(fpw, "Iteration times:%d\n",count);
+//    for(int i=1;i<6;i++)
+//            for(int j=1;j<6;j++){
+//                fprintf(fpw, "%.1f,",state_value[i][j]);
+//                if(j==5) fputc('\n', fpw);
+//            }
+//    fclose(fpw);
+//}
